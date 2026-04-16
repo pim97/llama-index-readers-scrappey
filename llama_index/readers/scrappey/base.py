@@ -1,9 +1,10 @@
 """Scrappey reader for LlamaIndex.
 
 Loads web pages as Markdown via the Scrappey API (https://scrappey.com),
-which bypasses anti-bot protections. HTML is fetched via Scrappey and
-converted to Markdown locally with `markdownify` (Scrappey itself has no
-server-side Markdown output).
+bypassing anti-bot protections. By default this reader asks Scrappey to
+return server-side Markdown (`markdown: true` in the payload) and reads it
+from `solution.markdown`. If that field is missing for any reason, the
+reader falls back to local HTML → Markdown conversion with `markdownify`.
 """
 
 from typing import Any, Dict, List
@@ -21,17 +22,20 @@ class ScrappeyReader(BasePydanticReader):
     """Reader that fetches web pages via the Scrappey API and returns Markdown.
 
     Scrappey is a web-scraping API that bypasses anti-bot protections
-    (Cloudflare, DataDome, PerimeterX, etc.). Scrappey returns HTML;
-    this reader converts it to Markdown locally via `markdownify`,
-    which is the format LlamaIndex and most LLMs ingest best.
+    (Cloudflare, DataDome, PerimeterX, etc.). With `as_markdown=True` (the
+    default), the request includes `markdown: true` so Scrappey returns
+    pre-converted Markdown in `solution.markdown`. That value is used
+    directly; if absent, the reader falls back to local HTML → Markdown
+    conversion against `solution.response`.
 
     Args:
         api_key: Your Scrappey API key. Get one at https://scrappey.com.
         api_url: Override the Scrappey API endpoint (defaults to the
             public endpoint). Useful for self-hosted or proxied setups.
         timeout: HTTP timeout in seconds for each scrape request.
-        as_markdown: If True (default), convert the scraped HTML to
-            Markdown. If False, the raw HTML is placed in Document.text.
+        as_markdown: If True (default), request Markdown output from
+            Scrappey (with a local fallback). If False, the raw HTML
+            from `solution.response` is placed in Document.text.
 
     Example:
         >>> from llama_index.readers.scrappey import ScrappeyReader
@@ -67,19 +71,31 @@ class ScrappeyReader(BasePydanticReader):
     # --- internals ---
 
     def _payload(self, url: str) -> Dict[str, Any]:
-        # `filter: ["response"]` trims Scrappey's reply to just the HTML
-        # body field we use for conversion, cutting bandwidth.
-        return {"cmd": "request.get", "url": url}
+        payload: Dict[str, Any] = {"cmd": "request.get", "url": url}
+        if self.as_markdown:
+            # NOTE: must be the JSON boolean `true` — Scrappey silently
+            # ignores the string `"true"`.
+            payload["markdown"] = True
+        return payload
 
     def _endpoint(self) -> str:
         # Scrappey authenticates via the `key` query parameter.
         return f"{self.api_url}?key={self.api_key}"
 
+    def _extract_text(self, solution: Dict[str, Any]) -> str:
+        if self.as_markdown:
+            # Prefer Scrappey's server-side Markdown.
+            md = solution.get("markdown")
+            if md:
+                return md
+            # Fallback: convert HTML locally if server-side Markdown is absent.
+            html = solution.get("response", "") or ""
+            return _html_to_markdown(html) if html else ""
+        return solution.get("response", "") or ""
+
     def _to_document(self, url: str, body: Dict[str, Any]) -> Document:
         solution: Dict[str, Any] = body.get("solution") or {}
-        html: str = solution.get("response", "") or ""
-        text: str = _html_to_markdown(html) if self.as_markdown and html else html
-
+        text = self._extract_text(solution)
         metadata: Dict[str, Any] = {
             "source": "scrappey",
             "url": url,

@@ -14,7 +14,7 @@ dev = [
 
 [project]
 name = "llama-index-readers-scrappey"
-version = "0.1.0"
+version = "0.1.1"
 description = "llama-index readers scrappey integration"
 readme = "README.md"
 requires-python = ">=3.10,<4.0"

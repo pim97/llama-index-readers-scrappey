@@ -4,6 +4,15 @@ All notable changes to this project are documented here. This project follows [S
 
 ## [Unreleased]
 
+## [0.1.1] — Server-side Markdown
+
+### Changed
+- The reader now asks Scrappey to generate Markdown server-side (`markdown: true` in the payload) and reads it from `solution.markdown`. This produces cleaner Markdown than local `markdownify` conversion and avoids the extra parse/convert pass on the client.
+- Local `markdownify` conversion is retained as a fallback for the rare case where `solution.markdown` is absent in a response.
+
+### Fixed
+- Previously, `markdownify` was always invoked locally. The server-side flag was never set because an earlier investigation concluded (incorrectly) that Scrappey had no Markdown mode. Scrappey accepts the flag only as a JSON boolean `true` — the string `"true"` is silently ignored, which was the source of the original confusion.
+
 ## [0.1.0] — Initial release
 
 ### Added

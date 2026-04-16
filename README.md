@@ -2,7 +2,7 @@
 
 Use [Scrappey](https://scrappey.com) to load web pages into LlamaIndex as clean Markdown, bypassing anti-bot protections (Cloudflare, DataDome, PerimeterX, etc.).
 
-Scrappey fetches the page through its anti-bot proxy; this reader then converts the returned HTML to Markdown locally with [`markdownify`](https://pypi.org/project/markdownify/), producing LLM-ready text.
+Scrappey fetches the page through its anti-bot proxy and returns server-side Markdown directly (via the `markdown: true` flag). This reader reads that Markdown straight into a LlamaIndex `Document`. If a response ever lacks server-side Markdown, the reader falls back to local conversion with [`markdownify`](https://pypi.org/project/markdownify/).
 
 ## Installation
 
