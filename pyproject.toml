@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "black>=24.3.0",
+    "mypy>=1.11.0",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "pytest-httpx>=0.30.0",
+    "ruff==0.11.11",
+]
+
+[project]
+name = "llama-index-readers-scrappey"
+version = "0.1.0"
+description = "llama-index readers scrappey integration"
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+license = "MIT"
+authors = [
+    {name = "pim", email = "pim@toplistbot.com"},
+]
+keywords = ["llama-index", "reader", "scrappey", "web-scraping", "markdown"]
+dependencies = [
+    "httpx>=0.27.0",
+    "llama-index-core>=0.12.0",
+    "markdownify>=0.11.6",
+]
+
+[project.urls]
+Homepage = "https://scrappey.com"
+Documentation = "https://wiki.scrappey.com"
+
+[tool.codespell]
+check-filenames = true
+check-hidden = true
+skip = "*.csv,*.html,*.json,*.jsonl,*.pdf,*.txt,*.ipynb"
+
+[tool.hatch.build.targets.sdist]
+include = ["llama_index/"]
+exclude = ["**/BUILD"]
+
+[tool.hatch.build.targets.wheel]
+include = ["llama_index/"]
+exclude = ["**/BUILD"]
+
+[tool.llamahub]
+contains_example = false
+import_path = "llama_index.readers.scrappey"
+
+[tool.llamahub.class_authors]
+ScrappeyReader = "pim"
+
+[tool.mypy]
+disallow_untyped_defs = true
+exclude = ["_static", "build", "examples", "notebooks", "venv"]
+ignore_missing_imports = true
+python_version = "3.10"
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "session"
+asyncio_mode = "auto"
+markers = [
+    "integration: marks integration tests (requires SCRAPPEY_API_KEY)",
+    "unit: marks unit tests",
+]

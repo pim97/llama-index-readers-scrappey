@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+
+# Build / packaging
+build/
+dist/
+wheels/
+*.whl
+*.tar.gz
+.hatch-*/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test / coverage artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.nox/
+
+# Secrets (never commit these)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
+.secrets/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
